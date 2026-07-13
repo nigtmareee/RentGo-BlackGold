@@ -2,9 +2,14 @@
 
 session_start();
 
-require_once '../../config/koneksi.php';
+require_once "../../config/koneksi.php";
 
 /** @var mysqli $conn */
+
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
+session_start();
 
 if (!isset($_SESSION['id'])) {
     die("Silakan login terlebih dahulu.");
@@ -36,10 +41,6 @@ WHERE id='$mobil_id'
 ");
 
 $mobil = mysqli_fetch_assoc($queryMobil);
-
-if(!$mobil){
-    die("Mobil tidak ditemukan.");
-}
 
 /*
 |--------------------------------------------------------------------------

@@ -1,5 +1,5 @@
 # ==========================
-# Visual Studio Code
+# VS Code
 # ==========================
 .vscode/
 
@@ -10,17 +10,17 @@ Thumbs.db
 Desktop.ini
 
 # ==========================
-# Log Files
+# Logs
 # ==========================
 *.log
 
 # ==========================
-# Cache
+# Temporary Cache
 # ==========================
 .cache/
 
 # ==========================
-# Temporary Upload
+# Temporary Uploads
 # ==========================
 assets/uploads/tmp/
 
@@ -28,3 +28,8 @@ assets/uploads/tmp/
 # Composer
 # ==========================
 vendor/
+
+# ==========================
+# macOS
+# ==========================
+.DS_Store
