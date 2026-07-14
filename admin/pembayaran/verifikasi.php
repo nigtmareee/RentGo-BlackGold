@@ -6,90 +6,202 @@ require_once '../../config/koneksi.php';
 
 /** @var mysqli $conn */
 
-$id = (int) $_GET['id'];
-
-$aksi = $_GET['aksi'];
-
-$data = mysqli_query(
-    $conn,
-    "SELECT * FROM pembayaran WHERE id='$id'"
-);
-
-$pembayaran = mysqli_fetch_assoc($data);
-
-if(!$pembayaran){
-    die("Data pembayaran tidak ditemukan.");
+if (!isset($_SESSION['id'])) {
+    header("Location: ../../auth/login.php");
+    exit;
 }
 
-$booking_id = $pembayaran['booking_id'];
+$id = isset($_GET['id']) ? (int) $_GET['id'] : 0;
+$aksi = $_GET['aksi'] ?? '';
 
-if($aksi == 'terima'){
+if ($id <= 0 || !in_array($aksi, ['terima', 'tolak'])) {
+    die("Permintaan tidak valid.");
+}
 
-    mysqli_query(
+mysqli_begin_transaction($conn);
+
+try {
+
+    /*
+    |--------------------------------------------------------------------------
+    | Ambil Data Pembayaran
+    |--------------------------------------------------------------------------
+    */
+
+    $stmt = mysqli_prepare(
         $conn,
-        "UPDATE pembayaran
-        SET status='Diterima'
-        WHERE id='$id'"
+        "SELECT *
+        FROM pembayaran
+        WHERE id=?"
     );
 
-    mysqli_query(
-        $conn,
-        "UPDATE booking
-        SET status='Sedang Disewa'
-        WHERE id='$booking_id'"
+    mysqli_stmt_bind_param($stmt, "i", $id);
+
+    mysqli_stmt_execute($stmt);
+
+    $pembayaran = mysqli_fetch_assoc(
+        mysqli_stmt_get_result($stmt)
     );
+
+    if (!$pembayaran) {
+        throw new Exception("Data pembayaran tidak ditemukan.");
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Cegah Verifikasi Berulang
+    |--------------------------------------------------------------------------
+    */
+
+    if (
+        $pembayaran['status'] == 'Diterima' ||
+        $pembayaran['status'] == 'Ditolak'
+    ) {
+        throw new Exception("Pembayaran sudah diverifikasi.");
+    }
+
+    $booking_id = (int)$pembayaran['booking_id'];
+
+    /*
+    |--------------------------------------------------------------------------
+    | Ambil Data Booking
+    |--------------------------------------------------------------------------
+    */
+
+    $stmt = mysqli_prepare(
+        $conn,
+        "SELECT *
+        FROM booking
+        WHERE id=?"
+    );
+
+    mysqli_stmt_bind_param($stmt, "i", $booking_id);
+
+    mysqli_stmt_execute($stmt);
 
     $booking = mysqli_fetch_assoc(
-        mysqli_query(
-            $conn,
-            "SELECT mobil_id
-             FROM booking
-             WHERE id='$booking_id'"
-        )
+        mysqli_stmt_get_result($stmt)
     );
 
-    mysqli_query(
-        $conn,
-        "UPDATE mobil
-         SET status='Disewa'
-         WHERE id='".$booking['mobil_id']."'"
-    );
+    if (!$booking) {
+        throw new Exception("Booking tidak ditemukan.");
+    }
 
-}
+    $mobil_id = (int)$booking['mobil_id'];
 
-if($aksi == 'tolak'){
+    /*
+    |--------------------------------------------------------------------------
+    | TERIMA PEMBAYARAN
+    |--------------------------------------------------------------------------
+    */
 
-    mysqli_query(
+    if ($aksi == "terima") {
+
+        $statusPembayaran = "Diterima";
+        $statusBooking = "Sedang Disewa";
+        $statusMobil = "Disewa";
+
+    } else {
+
+        /*
+        |--------------------------------------------------------------------------
+        | TOLAK PEMBAYARAN
+        |--------------------------------------------------------------------------
+        */
+
+        $statusPembayaran = "Ditolak";
+        $statusBooking = "Ditolak";
+        $statusMobil = "Tersedia";
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Update Pembayaran
+    |--------------------------------------------------------------------------
+    */
+
+    $stmt = mysqli_prepare(
         $conn,
         "UPDATE pembayaran
-        SET status='Ditolak'
-        WHERE id='$id'"
+        SET status=?
+        WHERE id=?"
     );
 
-    mysqli_query(
+    mysqli_stmt_bind_param(
+        $stmt,
+        "si",
+        $statusPembayaran,
+        $id
+    );
+
+    if (!mysqli_stmt_execute($stmt)) {
+        throw new Exception(mysqli_error($conn));
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Update Booking
+    |--------------------------------------------------------------------------
+    */
+
+    $stmt = mysqli_prepare(
         $conn,
         "UPDATE booking
-        SET status='Ditolak'
-        WHERE id='$booking_id'"
+        SET status=?
+        WHERE id=?"
     );
 
-    $booking = mysqli_fetch_assoc(
-        mysqli_query(
-            $conn,
-            "SELECT mobil_id
-             FROM booking
-             WHERE id='$booking_id'"
-        )
+    mysqli_stmt_bind_param(
+        $stmt,
+        "si",
+        $statusBooking,
+        $booking_id
     );
 
-    mysqli_query(
+    if (!mysqli_stmt_execute($stmt)) {
+        throw new Exception(mysqli_error($conn));
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Update Mobil
+    |--------------------------------------------------------------------------
+    */
+
+    $stmt = mysqli_prepare(
         $conn,
         "UPDATE mobil
-         SET status='Tersedia'
-         WHERE id='".$booking['mobil_id']."'"
+        SET status=?
+        WHERE id=?"
     );
 
-}
+    mysqli_stmt_bind_param(
+        $stmt,
+        "si",
+        $statusMobil,
+        $mobil_id
+    );
 
-header("Location: index.php");
-exit;
+    if (!mysqli_stmt_execute($stmt)) {
+        throw new Exception(mysqli_error($conn));
+    }
+
+    mysqli_commit($conn);
+
+    header("Location: index.php?success=1");
+    exit;
+
+} catch (Exception $e) {
+
+    mysqli_rollback($conn);
+
+    echo "<script>
+
+    alert('".$e->getMessage()."');
+
+    window.location='index.php';
+
+    </script>";
+
+    exit;
+}
