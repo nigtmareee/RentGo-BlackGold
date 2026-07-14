@@ -9,143 +9,277 @@ require_once "../../config/koneksi.php";
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
-session_start();
-
 if (!isset($_SESSION['id'])) {
     die("Silakan login terlebih dahulu.");
 }
 
-$user_id  = (int)$_SESSION['id'];
-$mobil_id = (int)$_POST['mobil_id'];
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    header("Location: ../mobil/index.php");
+    exit;
+}
 
-$no_hp = mysqli_real_escape_string($conn, $_POST['no_hp']);
-$alamat = mysqli_real_escape_string($conn, $_POST['alamat']);
+$user_id = (int) $_SESSION['id'];
 
-$tanggal_mulai    = $_POST['tanggal_mulai'];
-$tanggal_selesai  = $_POST['tanggal_selesai'];
+$mobil_id = isset($_POST['mobil_id']) ? (int) $_POST['mobil_id'] : 0;
 
-/* Update profil user */
-mysqli_query($conn,"
-UPDATE users
-SET
-    no_hp='$no_hp',
-    alamat='$alamat'
-WHERE id='$user_id'
-");
+$no_hp = trim($_POST['no_hp'] ?? '');
+$alamat = trim($_POST['alamat'] ?? '');
 
-/* Ambil data mobil */
-$queryMobil = mysqli_query($conn,"
-SELECT *
-FROM mobil
-WHERE id='$mobil_id'
-");
-
-$mobil = mysqli_fetch_assoc($queryMobil);
+$tanggal_mulai = $_POST['tanggal_mulai'] ?? '';
+$tanggal_selesai = $_POST['tanggal_selesai'] ?? '';
 
 /*
 |--------------------------------------------------------------------------
-| CEK STATUS MOBIL
+| VALIDASI INPUT
 |--------------------------------------------------------------------------
-| Mobil hanya boleh dibooking jika status = Tersedia
 */
 
-if(trim($mobil['status']) != 'Tersedia'){
+if (
+    $mobil_id <= 0 ||
+    empty($no_hp) ||
+    empty($alamat) ||
+    empty($tanggal_mulai) ||
+    empty($tanggal_selesai)
+) {
 
     echo "<script>
-    alert('Mobil sedang tidak tersedia.');
-    window.location='../mobil/index.php';
+        alert('Semua data booking wajib diisi.');
+        history.back();
     </script>";
     exit;
 }
 
-/* Hitung lama sewa */
+/*
+|--------------------------------------------------------------------------
+| VALIDASI TANGGAL
+|--------------------------------------------------------------------------
+*/
 
-$mulai    = strtotime($tanggal_mulai);
-$selesai  = strtotime($tanggal_selesai);
+$hari_ini = date('Y-m-d');
 
-$total_hari = ceil(($selesai-$mulai)/86400);
-
-if($total_hari<=0){
+if ($tanggal_mulai < $hari_ini) {
 
     echo "<script>
-    alert('Tanggal selesai harus lebih besar dari tanggal mulai.');
-    history.back();
+        alert('Tanggal mulai tidak boleh sebelum hari ini.');
+        history.back();
     </script>";
     exit;
 }
 
-$total_harga = $total_hari * $mobil['harga_per_hari'];
+$mulai = new DateTime($tanggal_mulai);
+$selesai = new DateTime($tanggal_selesai);
 
-$diskon = 0;
+$total_hari = $mulai->diff($selesai)->days;
 
-if($total_hari >= 3){
-    $diskon = $total_harga * 0.10;
+if ($mulai >= $selesai) {
+
+    echo "<script>
+        alert('Tanggal selesai harus lebih besar dari tanggal mulai.');
+        history.back();
+    </script>";
+    exit;
 }
 
-$total_bayar = $total_harga - $diskon;
+mysqli_begin_transaction($conn);
 
-/*
-|--------------------------------------------------------------------------
-| SIMPAN BOOKING
-|--------------------------------------------------------------------------
-*/
+try {
 
-$simpan = mysqli_query($conn,"
-INSERT INTO booking
-(
-user_id,
-mobil_id,
-tanggal_mulai,
-tanggal_selesai,
-total_hari,
-total_harga,
-diskon,
-status
-)
-VALUES
-(
-'$user_id',
-'$mobil_id',
-'$tanggal_mulai',
-'$tanggal_selesai',
-'$total_hari',
-'$total_bayar',
-'$diskon',
-'Menunggu Pembayaran'
-)
-");
+    /*
+    |--------------------------------------------------------------------------
+    | UPDATE PROFIL USER
+    |--------------------------------------------------------------------------
+    */
 
-if(!$simpan){
-    die(mysqli_error($conn));
+    $stmt = mysqli_prepare(
+        $conn,
+        "UPDATE users
+        SET no_hp=?, alamat=?
+        WHERE id=?"
+    );
+
+    mysqli_stmt_bind_param(
+        $stmt,
+        "ssi",
+        $no_hp,
+        $alamat,
+        $user_id
+    );
+
+    mysqli_stmt_execute($stmt);
+
+    /*
+    |--------------------------------------------------------------------------
+    | AMBIL DATA MOBIL
+    |--------------------------------------------------------------------------
+    */
+
+    $stmt = mysqli_prepare(
+        $conn,
+        "SELECT *
+        FROM mobil
+        WHERE id=?"
+    );
+
+    mysqli_stmt_bind_param($stmt, "i", $mobil_id);
+
+    mysqli_stmt_execute($stmt);
+
+    $mobil = mysqli_fetch_assoc(mysqli_stmt_get_result($stmt));
+
+    if (!$mobil) {
+        throw new Exception("Mobil tidak ditemukan.");
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | CEK STATUS MOBIL
+    |--------------------------------------------------------------------------
+    */
+
+    if (trim($mobil['status']) != "Tersedia") {
+
+        echo "<script>
+            alert('Mobil sedang tidak tersedia.');
+            window.location='../mobil/index.php';
+        </script>";
+
+        mysqli_rollback($conn);
+        exit;
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | CEK DOUBLE BOOKING
+    |--------------------------------------------------------------------------
+    */
+
+    $stmt = mysqli_prepare(
+        $conn,
+        "SELECT id
+        FROM booking
+        WHERE mobil_id=?
+        AND status IN ('Menunggu Pembayaran','Sedang Disewa')
+        AND (
+            tanggal_mulai <= ?
+            AND tanggal_selesai >= ?
+        )"
+    );
+
+    mysqli_stmt_bind_param(
+        $stmt,
+        "iss",
+        $mobil_id,
+        $tanggal_selesai,
+        $tanggal_mulai
+    );
+
+    mysqli_stmt_execute($stmt);
+
+    $cekBooking = mysqli_stmt_get_result($stmt);
+
+    if (mysqli_num_rows($cekBooking) > 0) {
+
+        echo "<script>
+            alert('Mobil sudah dibooking pada rentang tanggal tersebut.');
+            history.back();
+        </script>";
+
+        mysqli_rollback($conn);
+        exit;
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | HITUNG BIAYA
+    |--------------------------------------------------------------------------
+    */
+
+    $total_harga = $total_hari * $mobil['harga_per_hari'];
+
+    $diskon = 0;
+
+    if ($total_hari >= 3) {
+        $diskon = $total_harga * 0.10;
+    }
+
+    $total_bayar = $total_harga - $diskon;
+
+    /*
+    |--------------------------------------------------------------------------
+    | SIMPAN BOOKING
+    |--------------------------------------------------------------------------
+    */
+
+    $stmt = mysqli_prepare(
+        $conn,
+        "INSERT INTO booking
+        (
+            user_id,
+            mobil_id,
+            tanggal_mulai,
+            tanggal_selesai,
+            total_hari,
+            total_harga,
+            diskon,
+            status
+        )
+        VALUES
+        (
+            ?,?,?,?,?,?,?,?
+        )"
+    );
+
+    $status = "Menunggu Pembayaran";
+
+    mysqli_stmt_bind_param(
+        $stmt,
+        "iissidds",
+        $user_id,
+        $mobil_id,
+        $tanggal_mulai,
+        $tanggal_selesai,
+        $total_hari,
+        $total_bayar,
+        $diskon,
+        $status
+    );
+
+    if (!mysqli_stmt_execute($stmt)) {
+        throw new Exception(mysqli_error($conn));
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | PENTING
+    |--------------------------------------------------------------------------
+    | Status mobil TIDAK berubah di sini.
+    | Mobil tetap "Tersedia" sampai pembayaran
+    | diverifikasi oleh Admin.
+    |--------------------------------------------------------------------------
+    */
+
+    mysqli_commit($conn);
+
+    echo "<script>
+
+        alert(
+            'Booking berhasil dibuat!\\n\\n' +
+            'Status : Menunggu Pembayaran\\n' +
+            'Silakan upload bukti pembayaran.'
+        );
+
+        window.location='riwayat.php';
+
+    </script>";
+
+} catch (Exception $e) {
+
+    mysqli_rollback($conn);
+
+    echo "<script>
+        alert('Terjadi kesalahan : " . addslashes($e->getMessage()) . "');
+        history.back();
+    </script>";
 }
-
-/*
-|--------------------------------------------------------------------------
-| PENTING !!
-|--------------------------------------------------------------------------
-| JANGAN mengubah status mobil di sini.
-|
-| Mobil tetap 'Tersedia' sampai Admin
-| menerima pembayaran.
-|
-| Status mobil baru berubah menjadi
-| 'Disewa' di:
-| admin/pembayaran/verifikasi.php
-|--------------------------------------------------------------------------
-*/
-
-/* Redirect */
-
-echo "<script>
-
-alert(
-'Booking berhasil dibuat!\n\n'+
-'Status : Menunggu Pembayaran\n'+
-'Silakan upload bukti pembayaran.'
-);
-
-window.location='riwayat.php';
-
-</script>";
 
 exit;
