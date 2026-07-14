@@ -11,114 +11,261 @@ if (!isset($_SESSION['id'])) {
     exit;
 }
 
-$user_id = (int) $_SESSION['id'];
-
-if (!isset($_POST['booking_id'])) {
-    die("Booking ID tidak ditemukan.");
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    header("Location: ../booking/riwayat.php");
+    exit;
 }
 
-$booking_id = (int) $_POST['booking_id'];
+$user_id = (int)$_SESSION['id'];
 
-$cekBooking = mysqli_prepare(
+$booking_id = isset($_POST['booking_id']) ? (int)$_POST['booking_id'] : 0;
+$metode    = trim($_POST['metode'] ?? '');
+$jumlah    = (float)($_POST['jumlah'] ?? 0);
+
+if (
+    $booking_id <= 0 ||
+    empty($metode) ||
+    $jumlah <= 0
+) {
+    die("Data pembayaran tidak lengkap.");
+}
+
+/*
+|--------------------------------------------------------------------------
+| Cek Booking
+|--------------------------------------------------------------------------
+*/
+
+$stmt = mysqli_prepare(
     $conn,
-    "SELECT id
-     FROM booking
-     WHERE id = ?
-     AND user_id = ?"
+    "SELECT id,status
+    FROM booking
+    WHERE id=?
+    AND user_id=?"
 );
 
 mysqli_stmt_bind_param(
-    $cekBooking,
+    $stmt,
     "ii",
     $booking_id,
     $user_id
 );
 
-mysqli_stmt_execute($cekBooking);
+mysqli_stmt_execute($stmt);
 
-$hasil = mysqli_stmt_get_result($cekBooking);
+$booking = mysqli_fetch_assoc(
+    mysqli_stmt_get_result($stmt)
+);
 
-if (mysqli_num_rows($hasil) == 0) {
-    die("Booking tidak ditemukan atau bukan milik Anda.");
+if (!$booking) {
+    die("Booking tidak ditemukan.");
 }
 
-$metode = $_POST['metode'];
-$jumlah = (float) $_POST['jumlah'];
+/*
+|--------------------------------------------------------------------------
+| Booking sudah dibayar?
+|--------------------------------------------------------------------------
+*/
 
-if (!isset($_FILES['bukti'])) {
-    die("File bukti transfer belum dipilih.");
+if (
+    $booking['status'] != 'Menunggu Pembayaran'
+) {
+
+    echo "
+    <script>
+    alert('Booking ini sudah diproses.');
+    history.back();
+    </script>
+    ";
+
+    exit;
 }
 
-$folder = '../../assets/uploads/pembayaran/';
+/*
+|--------------------------------------------------------------------------
+| Validasi Upload
+|--------------------------------------------------------------------------
+*/
+
+if (
+    !isset($_FILES['bukti']) ||
+    $_FILES['bukti']['error'] != UPLOAD_ERR_OK
+) {
+    die("Bukti pembayaran belum dipilih.");
+}
+
+$file = $_FILES['bukti'];
+
+$maxSize = 2 * 1024 * 1024;
+
+if ($file['size'] > $maxSize) {
+
+    die("Ukuran file maksimal 2 MB.");
+}
+
+$finfo = finfo_open(FILEINFO_MIME_TYPE);
+
+$mime = finfo_file(
+    $finfo,
+    $file['tmp_name']
+);
+
+finfo_close($finfo);
+
+$allowedMime = [
+
+    'image/jpeg' => 'jpg',
+
+    'image/png' => 'png',
+
+    'application/pdf' => 'pdf'
+
+];
+
+if (!array_key_exists($mime, $allowedMime)) {
+
+    die("Format file tidak didukung.");
+}
+
+$folder = "../../assets/uploads/pembayaran/";
 
 if (!is_dir($folder)) {
+
     mkdir($folder, 0777, true);
 }
 
-$nama_file =
-    time() . "_" .
-    basename($_FILES['bukti']['name']);
-
-$tmp =
-    $_FILES['bukti']['tmp_name'];
-
-$upload = move_uploaded_file(
-    $tmp,
-    $folder . $nama_file
+$namaFile = sprintf(
+    "PAY-%d-%s.%s",
+    $booking_id,
+    uniqid(),
+    $allowedMime[$mime]
 );
 
-if (!$upload) {
-    die("Upload bukti transfer gagal.");
+$lokasiFile = $folder . $namaFile;
+
+if (!move_uploaded_file(
+    $file['tmp_name'],
+    $lokasiFile
+)) {
+
+    die("Upload gagal.");
 }
 
 /*
 |--------------------------------------------------------------------------
-| Simpan pembayaran
+| Transaction
 |--------------------------------------------------------------------------
 */
 
-$sql = "
-INSERT INTO pembayaran
-(
-    booking_id,
-    metode_pembayaran,
-    bukti_transfer,
-    jumlah_bayar,
-    status
-)
-VALUES
-(
-    '$booking_id',
-    '$metode',
-    '$nama_file',
-    '$jumlah',
-    'Menunggu Verifikasi'
-)
-";
+mysqli_begin_transaction($conn);
 
-$simpan = mysqli_query($conn, $sql);
+try {
 
-if (!$simpan) {
-    die(mysqli_error($conn));
-}
+    /*
+    |--------------------------------------------------------------------------
+    | Simpan Pembayaran
+    |--------------------------------------------------------------------------
+    */
 
-/*
-|--------------------------------------------------------------------------
-| Update status booking
-|--------------------------------------------------------------------------
-*/
+    $stmt = mysqli_prepare(
+        $conn,
+        "INSERT INTO pembayaran
+        (
+            booking_id,
+            metode_pembayaran,
+            bukti_transfer,
+            jumlah_bayar,
+            status
+        )
+        VALUES
+        (
+            ?,?,?,?,
+            'Menunggu Verifikasi'
+        )"
+    );
 
-mysqli_query(
-    $conn,
-    "UPDATE booking
-    SET status='Menunggu Verifikasi'
-    WHERE id='$booking_id'"
-);
+    mysqli_stmt_bind_param(
 
-echo "
-<script>
-    alert('Bukti pembayaran berhasil diupload');
+        $stmt,
+
+        "issd",
+
+        $booking_id,
+
+        $metode,
+
+        $namaFile,
+
+        $jumlah
+
+    );
+
+    if (!mysqli_stmt_execute($stmt)) {
+
+        throw new Exception(
+            mysqli_error($conn)
+        );
+    }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Update Booking
+    |--------------------------------------------------------------------------
+    */
+
+    $stmt = mysqli_prepare(
+
+        $conn,
+
+        "UPDATE booking
+        SET status='Menunggu Verifikasi'
+        WHERE id=?"
+
+    );
+
+    mysqli_stmt_bind_param(
+        $stmt,
+        "i",
+        $booking_id
+    );
+
+    if (!mysqli_stmt_execute($stmt)) {
+
+        throw new Exception(
+            mysqli_error($conn)
+        );
+    }
+
+    mysqli_commit($conn);
+
+    echo "
+    <script>
+
+    alert('Bukti pembayaran berhasil diupload.');
+
     window.location='../booking/riwayat.php';
-</script>
-";
+
+    </script>
+    ";
+
+} catch (Exception $e) {
+
+    mysqli_rollback($conn);
+
+    if (file_exists($lokasiFile)) {
+
+        unlink($lokasiFile);
+    }
+
+    echo "
+    <script>
+
+    alert('".$e->getMessage()."');
+
+    history.back();
+
+    </script>
+    ";
+}
+
 exit;
