@@ -35,129 +35,355 @@ $data = mysqli_query(
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Kelola Booking</title>
 
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Kelola Booking | RentGo Black Gold Luxury</title>
+
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
+
+<style>
+
+:root{
+    --gold:#d4af37;
+    --dark:#050505;
+    --card:#111111;
+    --border:rgba(212,175,55,.18);
+}
+
+body{
+    background:#050505;
+    color:#fff;
+    font-family:'Segoe UI',sans-serif;
+}
+
+.card-premium{
+    background:#111;
+    border:1px solid var(--border);
+    border-radius:22px;
+    box-shadow:0 15px 35px rgba(0,0,0,.45);
+    padding:30px;
+}
+
+.page-title{
+    color:var(--gold);
+    font-weight:bold;
+}
+
+.table{
+    color:white;
+    margin-bottom:0;
+}
+
+.table thead{
+
+    background:#1c1c1c;
+
+}
+
+.table thead th{
+
+    color:#d4af37;
+    border-color:#333;
+    text-align:center;
+    white-space:nowrap;
+
+}
+
+.table tbody tr{
+
+    background:#111;
+    transition:.3s;
+
+}
+
+.table tbody tr:hover{
+
+    background:#1b1b1b;
+
+}
+
+.table td{
+
+    border-color:#2d2d2d;
+    vertical-align:middle;
+
+}
+
+.btn-gold{
+
+    background:linear-gradient(135deg,#d4af37,#f1c75b);
+    color:#000;
+    border:none;
+    font-weight:bold;
+
+}
+
+.btn-gold:hover{
+
+    transform:translateY(-2px);
+
+}
+
+.btn-finish{
+
+    background:#198754;
+    color:white;
+    border:none;
+
+}
+
+.btn-finish:hover{
+
+    background:#157347;
+
+}
+
+.badge-premium{
+
+    border-radius:30px;
+    padding:8px 14px;
+    font-size:13px;
+
+}
+
+.status-wait{
+
+    background:#ffc107;
+    color:black;
+
+}
+
+.status-rent{
+
+    background:#0d6efd;
+
+}
+
+.status-done{
+
+    background:#198754;
+
+}
+
+.status-cancel{
+
+    background:#dc3545;
+
+}
+
+</style>
+
 </head>
 <body>
 
-<div class="container mt-4">
+<div class="container py-5">
 
-    <h2>Kelola Booking</h2>
-    <hr>
+<div class="card-premium">
 
-    <a href="../dashboard.php" class="btn btn-secondary mb-3">
-        Kembali Dashboard
-    </a>
+<div class="d-flex justify-content-between align-items-center mb-4">
 
-    <table class="table table-bordered table-striped">
+<div>
 
-        <tr>
-            <th>No</th>
-            <th>User</th>
-            <th>Mobil</th>
-            <th>Tanggal Sewa</th>
-            <th>Total Hari</th>
-            <th>Total Harga</th>
-            <th>Status</th>
-            <th>Aksi</th>
-        </tr>
+<h2 class="page-title">
 
-        <?php
-        $no = 1;
+<i class="fas fa-calendar-check"></i>
 
-        while($row = mysqli_fetch_assoc($data)):
-        ?>
+Kelola Booking
 
-        <tr>
+</h2>
 
-            <td><?= $no++; ?></td>
+<p class="text-secondary mb-0">
 
-            <td><?= $row['nama']; ?></td>
+Manajemen seluruh transaksi penyewaan kendaraan RentGo
 
-            <td><?= $row['nama_mobil']; ?></td>
+</p>
 
-            <td>
-                <?= $row['tanggal_mulai']; ?>
-                s/d
-                <?= $row['tanggal_selesai']; ?>
-            </td>
+</div>
 
-            <td><?= $row['total_hari']; ?></td>
+<a href="../dashboard.php" class="btn btn-gold">
 
-            <td>
-                Rp <?= number_format($row['total_harga']); ?>
-            </td>
+<i class="fas fa-arrow-left"></i>
 
-            <td>
+Dashboard
 
-                <?php if($row['status'] == 'Menunggu Pembayaran'): ?>
+</a>
 
-                    <span class="badge bg-warning text-dark">
-                        Menunggu Pembayaran
-                    </span>
+</div>
 
-                <?php elseif($row['status'] == 'Sedang Disewa'): ?>
+<div class="table-responsive">
 
-                    <span class="badge bg-primary">
-                        Sedang Disewa
-                    </span>
+<table class="table table-hover align-middle">
 
-                <?php elseif($row['status'] == 'Selesai'): ?>
+<thead>
 
-                    <span class="badge bg-success">
-                        Selesai
-                    </span>
+<tr>
 
-                <?php elseif($row['status'] == 'Dibatalkan'): ?>
+<th>No</th>
+<th>User</th>
+<th>Mobil</th>
+<th>Periode Sewa</th>
+<th>Hari</th>
+<th>Total Harga</th>
+<th>Status</th>
+<th width="170">Aksi</th>
 
-                    <span class="badge bg-danger">
-                        Dibatalkan
-                    </span>
+</tr>
 
-                <?php endif; ?>
+</thead>
 
-            </td>
+<tbody>
 
-            <td>
+<?php
+$no=1;
 
-                <?php if($row['status'] == 'Sedang Disewa'): ?>
+while($row=mysqli_fetch_assoc($data)):
+?>
 
-                    <a
-                        href="proses_status.php?id=<?= $row['id']; ?>"
-                        class="btn btn-success btn-sm"
-                        onclick="return confirm('Selesaikan penyewaan ini?')"
-                    >
-                        Selesaikan
-                    </a>
+<tr>
 
-                <?php elseif($row['status'] == 'Selesai'): ?>
+<td class="text-center">
 
-                    <button
-                        class="btn btn-secondary btn-sm"
-                        disabled
-                    >
-                        Selesai
-                    </button>
+<?= $no++; ?>
 
-                <?php else: ?>
+</td>
 
-                    <button
-                        class="btn btn-light btn-sm"
-                        disabled
-                    >
-                        -
-                    </button>
+<td>
 
-                <?php endif; ?>
+<strong><?= $row['nama']; ?></strong>
 
-            </td>
+</td>
 
-        </tr>
+<td>
 
-        <?php endwhile; ?>
+<?= $row['nama_mobil']; ?>
 
-    </table>
+</td>
+
+<td>
+
+<?= $row['tanggal_mulai']; ?>
+
+<br>
+
+<small class="text-secondary">
+
+s/d
+
+<?= $row['tanggal_selesai']; ?>
+
+</small>
+
+</td>
+
+<td class="text-center">
+
+<?= $row['total_hari']; ?>
+
+Hari
+
+</td>
+
+<td>
+
+<strong>
+
+Rp <?= number_format($row['total_harga'],0,',','.'); ?>
+
+</strong>
+
+</td>
+
+<td>
+
+<?php if($row['status']=="Menunggu Pembayaran"){ ?>
+
+<span class="badge badge-premium status-wait">
+
+Menunggu Pembayaran
+
+</span>
+
+<?php }elseif($row['status']=="Sedang Disewa"){ ?>
+
+<span class="badge badge-premium status-rent">
+
+Sedang Disewa
+
+</span>
+
+<?php }elseif($row['status']=="Selesai"){ ?>
+
+<span class="badge badge-premium status-done">
+
+Selesai
+
+</span>
+
+<?php }elseif($row['status']=="Dibatalkan"){ ?>
+
+<span class="badge badge-premium status-cancel">
+
+Dibatalkan
+
+</span>
+
+<?php } ?>
+
+</td>
+
+<td class="text-center">
+
+<?php if($row['status']=="Sedang Disewa"){ ?>
+
+<a href="proses_status.php?id=<?= $row['id']; ?>"
+
+class="btn btn-finish btn-sm"
+
+onclick="return confirm('Selesaikan penyewaan ini?')">
+
+<i class="fas fa-check-circle"></i>
+
+Selesaikan
+
+</a>
+
+<?php }elseif($row['status']=="Selesai"){ ?>
+
+<button class="btn btn-secondary btn-sm" disabled>
+
+<i class="fas fa-check"></i>
+
+Selesai
+
+</button>
+
+<?php }else{ ?>
+
+<button class="btn btn-dark btn-sm" disabled>
+
+-
+
+</button>
+
+<?php } ?>
+
+</td>
+
+</tr>
+
+<?php endwhile; ?>
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
 
 </div>
 

@@ -73,70 +73,283 @@ $totalPendapatan =
 
 <meta charset="UTF-8">
 
-<meta name="viewport"
-      content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 
-<title>Laporan Rental</title>
+<title>Laporan Rental | RentGo Black Gold Luxury</title>
 
-<link
-href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
+
+<style>
+
+:root{
+
+    --gold:#d4af37;
+    --dark:#050505;
+    --card:#111111;
+    --border:rgba(212,175,55,.18);
+
+}
+
+body{
+
+    background:#050505;
+    color:#fff;
+    font-family:'Segoe UI',sans-serif;
+
+}
+
+.card-premium{
+
+    background:#111;
+    border:1px solid var(--border);
+    border-radius:22px;
+    box-shadow:0 15px 35px rgba(0,0,0,.45);
+    padding:30px;
+
+}
+
+.page-title{
+
+    color:var(--gold);
+    font-weight:bold;
+
+}
+
+.form-label{
+
+    color:#ddd;
+    font-weight:600;
+
+}
+
+.form-control{
+
+    background:#181818;
+    color:#fff;
+    border:1px solid #333;
+
+}
+
+.form-control:focus{
+
+    background:#202020;
+    color:#fff;
+    border-color:var(--gold);
+    box-shadow:0 0 12px rgba(212,175,55,.25);
+
+}
+
+.table{
+
+    color:white;
+    margin-bottom:0;
+
+}
+
+.table thead{
+
+    background:#1c1c1c;
+
+}
+
+.table thead th{
+
+    color:#d4af37;
+    border-color:#333;
+    text-align:center;
+
+}
+
+.table tbody tr{
+
+    background:#111;
+    transition:.3s;
+
+}
+
+.table tbody tr:hover{
+
+    background:#1b1b1b;
+
+}
+
+.table td{
+
+    border-color:#2d2d2d;
+    vertical-align:middle;
+
+}
+
+.btn-gold{
+
+    background:linear-gradient(135deg,#d4af37,#f1c75b);
+    color:black;
+    font-weight:bold;
+    border:none;
+
+}
+
+.btn-gold:hover{
+
+    transform:translateY(-2px);
+
+}
+
+.info-card{
+
+    background:#1b1b1b;
+    border-left:5px solid var(--gold);
+    border-radius:15px;
+    padding:18px;
+    margin:25px 0;
+
+}
+
+.badge-status{
+
+    border-radius:20px;
+    padding:8px 14px;
+    font-size:13px;
+
+}
+
+.status-menunggu{
+
+    background:#ffc107;
+    color:black;
+
+}
+
+.status-disewa{
+
+    background:#0d6efd;
+
+}
+
+.status-selesai{
+
+    background:#198754;
+
+}
+
+.status-batal{
+
+    background:#dc3545;
+
+}
+
+@media print{
+
+    .btn,
+    form{
+
+        display:none;
+
+    }
+
+    body{
+
+        background:white;
+        color:black;
+
+    }
+
+    .card-premium{
+
+        box-shadow:none;
+        border:none;
+
+    }
+
+}
+
+</style>
 
 </head>
 <body>
 
-<div class="container mt-4">
+<div class="container py-5">
 
-<h2>Laporan Rental Mobil</h2>
+<div class="card-premium">
 
-<hr>
+<div class="d-flex justify-content-between align-items-center mb-4">
 
-<a
-href="../dashboard.php"
-class="btn btn-secondary mb-3"
->
-Kembali Dashboard
+<div>
+
+<h2 class="page-title">
+
+<i class="fas fa-chart-line"></i>
+
+Laporan Rental
+
+</h2>
+
+<p class="text-secondary mb-0">
+
+Laporan transaksi penyewaan kendaraan RentGo Black Gold Luxury
+
+</p>
+
+</div>
+
+<a href="../dashboard.php" class="btn btn-gold">
+
+<i class="fas fa-arrow-left"></i>
+
+Dashboard
+
 </a>
+
+</div>
 
 <form method="GET">
 
-<div class="row">
+<div class="row g-3 align-items-end">
 
 <div class="col-md-4">
 
-<label>Tanggal Awal</label>
+<label class="form-label">
+
+Tanggal Awal
+
+</label>
 
 <input
 type="date"
 name="tanggal_awal"
 class="form-control"
-value="<?= $tanggal_awal ?>"
->
+value="<?= $tanggal_awal ?>">
 
 </div>
 
 <div class="col-md-4">
 
-<label>Tanggal Akhir</label>
+<label class="form-label">
+
+Tanggal Akhir
+
+</label>
 
 <input
 type="date"
 name="tanggal_akhir"
 class="form-control"
-value="<?= $tanggal_akhir ?>"
->
+value="<?= $tanggal_akhir ?>">
 
 </div>
 
 <div class="col-md-4">
 
-<label>&nbsp;</label>
-
 <button
 type="submit"
-class="btn btn-primary w-100"
->
+class="btn btn-gold w-100">
+
+<i class="fas fa-filter"></i>
+
 Filter Data
+
 </button>
 
 </div>
@@ -145,79 +358,109 @@ Filter Data
 
 </form>
 
-<div class="alert alert-success mt-4">
+<div class="info-card">
 
-Total Pendapatan :
+<i class="fas fa-wallet text-warning"></i>
 
 <strong>
 
-Rp <?= number_format(
-$totalPendapatan,
-0,
-',',
-'.'
-); ?>
+Total Pendapatan
 
 </strong>
 
+<h3 class="text-warning mt-2">
+
+Rp <?= number_format($totalPendapatan,0,',','.'); ?>
+
+</h3>
+
 </div>
 
-<div class="mb-3">
+<div class="mb-4">
 
 <button
 onclick="window.print()"
-class="btn btn-danger"
->
+class="btn btn-danger">
+
+<i class="fas fa-print"></i>
+
 Cetak Laporan
+
 </button>
 
 </div>
 
-<table
-class="table table-bordered table-striped"
->
+<div class="table-responsive">
+
+<table class="table table-hover align-middle">
+
+<thead>
 
 <tr>
 
 <th>No</th>
 <th>Penyewa</th>
 <th>Mobil</th>
-<th>Tanggal</th>
+<th>Periode</th>
 <th>Hari</th>
 <th>Total</th>
 <th>Status</th>
 
 </tr>
 
+</thead>
+
+<tbody>
+
 <?php
 
-$no = 1;
+$no=1;
 
-while(
-$row = mysqli_fetch_assoc($data)
-):
+while($row=mysqli_fetch_assoc($data)):
 
 ?>
 
 <tr>
 
-<td><?= $no++; ?></td>
+<td class="text-center">
 
-<td><?= $row['nama']; ?></td>
+<?= $no++; ?>
 
-<td><?= $row['nama_mobil']; ?></td>
+</td>
+
+<td>
+
+<strong>
+
+<?= $row['nama']; ?>
+
+</strong>
+
+</td>
+
+<td>
+
+<?= $row['nama_mobil']; ?>
+
+</td>
 
 <td>
 
 <?= $row['tanggal_mulai']; ?>
 
+<br>
+
+<small class="text-secondary">
+
 s/d
 
 <?= $row['tanggal_selesai']; ?>
 
+</small>
+
 </td>
 
-<td>
+<td class="text-center">
 
 <?= $row['total_hari']; ?>
 
@@ -227,18 +470,37 @@ Hari
 
 <td>
 
-Rp <?= number_format(
-$row['total_harga'],
-0,
-',',
-'.'
-); ?>
+<strong>
+
+Rp <?= number_format($row['total_harga'],0,',','.'); ?>
+
+</strong>
 
 </td>
 
 <td>
 
-<?= $row['status']; ?>
+<?php
+
+if($row['status']=="Menunggu Pembayaran"){
+
+echo '<span class="badge badge-status status-menunggu">Menunggu</span>';
+
+}elseif($row['status']=="Sedang Disewa"){
+
+echo '<span class="badge badge-status status-disewa">Sedang Disewa</span>';
+
+}elseif($row['status']=="Selesai"){
+
+echo '<span class="badge badge-status status-selesai">Selesai</span>';
+
+}else{
+
+echo '<span class="badge badge-status status-batal">Dibatalkan</span>';
+
+}
+
+?>
 
 </td>
 
@@ -246,7 +508,13 @@ $row['total_harga'],
 
 <?php endwhile; ?>
 
+</tbody>
+
 </table>
+
+</div>
+
+</div>
 
 </div>
 

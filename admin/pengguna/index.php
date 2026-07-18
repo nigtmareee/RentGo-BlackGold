@@ -34,128 +34,355 @@ $totalPengguna = mysqli_num_rows($data);
 <head>
 
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Kelola Pengguna</title>
+<title>Kelola Pengguna | RentGo Black Gold Luxury</title>
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
+
+<style>
+
+:root{
+
+    --gold:#d4af37;
+    --gold2:#f1c75b;
+    --dark:#050505;
+    --card:#111111;
+    --border:rgba(212,175,55,.18);
+
+}
+
+body{
+
+    background:#050505;
+    color:white;
+    font-family:'Segoe UI',sans-serif;
+
+}
+
+.card-premium{
+
+    background:#111;
+    border:1px solid var(--border);
+    border-radius:22px;
+    box-shadow:0 15px 35px rgba(0,0,0,.45);
+    padding:30px;
+
+}
+
+.page-title{
+
+    color:var(--gold);
+    font-weight:bold;
+
+}
+
+.table{
+
+    color:white;
+    margin-bottom:0;
+
+}
+
+.table thead{
+
+    background:#1d1d1d;
+
+}
+
+.table thead th{
+
+    color:#d4af37;
+    border-color:#333;
+    text-align:center;
+    white-space:nowrap;
+
+}
+
+.table tbody tr{
+
+    background:#111;
+    transition:.3s;
+
+}
+
+.table tbody tr:hover{
+
+    background:#1b1b1b;
+
+}
+
+.table td{
+
+    border-color:#2d2d2d;
+    vertical-align:middle;
+
+}
+
+.btn-gold{
+
+    background:linear-gradient(135deg,#d4af37,#f1c75b);
+    color:#000;
+    font-weight:bold;
+    border:none;
+
+}
+
+.btn-gold:hover{
+
+    transform:translateY(-2px);
+
+}
+
+.info-card{
+
+    background:#1b1b1b;
+    border-left:5px solid var(--gold);
+    border-radius:15px;
+    padding:18px;
+    margin-bottom:25px;
+
+}
+
+.badge-admin{
+
+    background:#dc3545;
+    padding:8px 15px;
+    border-radius:20px;
+
+}
+
+.badge-user{
+
+    background:#0d6efd;
+    padding:8px 15px;
+    border-radius:20px;
+
+}
+
+.btn-delete{
+
+    background:#dc3545;
+    color:white;
+    border:none;
+
+}
+
+.btn-delete:hover{
+
+    background:#bb2d3b;
+
+}
+
+.btn-my{
+
+    background:#6c757d;
+    color:white;
+
+}
+
+</style>
 
 </head>
 <body>
 
-<div class="container mt-4">
+<div class="container py-5">
 
-    <h2>Kelola Pengguna</h2>
+<div class="card-premium">
 
-    <hr>
+<div class="d-flex justify-content-between align-items-center mb-4">
 
-    <a href="../dashboard.php" class="btn btn-secondary mb-3">
-        Kembali Dashboard
-    </a>
+<div>
 
-    <div class="alert alert-info">
-        Total Pengguna :
-        <strong><?= $totalPengguna ?></strong>
-    </div>
+<h2 class="page-title">
 
-    <table class="table table-bordered table-striped table-hover">
+<i class="fas fa-users-cog"></i>
 
-        <thead class="table-dark">
-            <tr>
-                <th width="60">No</th>
-                <th>Nama</th>
-                <th>Email</th>
-                <th>No HP</th>
-                <th>Alamat</th>
-                <th width="120">Role</th>
-                <th width="140">Aksi</th>
-            </tr>
-        </thead>
+Kelola Pengguna
 
-        <tbody>
+</h2>
 
-        <?php
+<p class="text-secondary mb-0">
 
-        $no = 1;
+Manajemen seluruh akun pengguna RentGo Black Gold Luxury
 
-        while($row = mysqli_fetch_assoc($data)):
+</p>
 
-        ?>
+</div>
 
-        <tr>
+<a href="../dashboard.php" class="btn btn-gold">
 
-            <td><?= $no++; ?></td>
+<i class="fas fa-arrow-left"></i>
 
-            <td>
-                <?= htmlspecialchars($row['nama']); ?>
-            </td>
+Dashboard
 
-            <td>
-                <?= htmlspecialchars($row['email']); ?>
-            </td>
+</a>
 
-            <td>
-                <?= !empty($row['no_hp'])
-                    ? htmlspecialchars($row['no_hp'])
-                    : '-'; ?>
-            </td>
+</div>
 
-            <td>
-                <?= !empty($row['alamat'])
-                    ? htmlspecialchars($row['alamat'])
-                    : '-'; ?>
-            </td>
+<div class="info-card">
 
-            <td>
+<i class="fas fa-user-friends text-warning"></i>
 
-                <?php if($row['role'] == 'admin'): ?>
+Total Pengguna
 
-                    <span class="badge bg-danger">
-                        Admin
-                    </span>
+<strong class="text-warning fs-5">
 
-                <?php else: ?>
+<?= $totalPengguna ?>
 
-                    <span class="badge bg-primary">
-                        User
-                    </span>
+</strong>
 
-                <?php endif; ?>
+Akun
 
-            </td>
+</div>
 
-            <td>
+<div class="table-responsive">
 
-                <?php if($row['id'] != $_SESSION['id']): ?>
+<table class="table table-hover align-middle">
 
-                    <a
-                        href="hapus.php?id=<?= $row['id']; ?>"
-                        class="btn btn-danger btn-sm"
-                        onclick="return confirm('Yakin ingin menghapus pengguna ini?')"
-                    >
-                        Hapus
-                    </a>
+<thead>
 
-                <?php else: ?>
+<tr>
 
-                    <button
-                        class="btn btn-secondary btn-sm"
-                        disabled
-                    >
-                        Akun Saya
-                    </button>
+<th>No</th>
 
-                <?php endif; ?>
+<th>Nama</th>
 
-            </td>
+<th>Email</th>
 
-        </tr>
+<th>No HP</th>
 
-        <?php endwhile; ?>
+<th>Alamat</th>
 
-        </tbody>
+<th>Role</th>
 
-    </table>
+<th width="160">Aksi</th>
+
+</tr>
+
+</thead>
+
+<tbody>
+
+<?php
+
+$no=1;
+
+while($row=mysqli_fetch_assoc($data)):
+
+?>
+
+<tr>
+
+<td class="text-center">
+
+<?= $no++; ?>
+
+</td>
+
+<td>
+
+<strong>
+
+<?= htmlspecialchars($row['nama']); ?>
+
+</strong>
+
+</td>
+
+<td>
+
+<?= htmlspecialchars($row['email']); ?>
+
+</td>
+
+<td>
+
+<?= !empty($row['no_hp']) ? htmlspecialchars($row['no_hp']) : '-'; ?>
+
+</td>
+
+<td>
+
+<?= !empty($row['alamat']) ? htmlspecialchars($row['alamat']) : '-'; ?>
+
+</td>
+
+<td class="text-center">
+
+<?php if($row['role']=="admin"){ ?>
+
+<span class="badge badge-admin">
+
+<i class="fas fa-user-shield"></i>
+
+Admin
+
+</span>
+
+<?php }else{ ?>
+
+<span class="badge badge-user">
+
+<i class="fas fa-user"></i>
+
+User
+
+</span>
+
+<?php } ?>
+
+</td>
+
+<td class="text-center">
+
+<?php if($row['id'] != $_SESSION['id']){ ?>
+
+<a
+
+href="hapus.php?id=<?= $row['id']; ?>"
+
+class="btn btn-delete btn-sm"
+
+onclick="return confirm('Yakin ingin menghapus pengguna ini?')">
+
+<i class="fas fa-trash"></i>
+
+Hapus
+
+</a>
+
+<?php }else{ ?>
+
+<button
+
+class="btn btn-my btn-sm"
+
+disabled>
+
+<i class="fas fa-user-check"></i>
+
+Akun Saya
+
+</button>
+
+<?php } ?>
+
+</td>
+
+</tr>
+
+<?php endwhile; ?>
+
+</tbody>
+
+</table>
+
+</div>
+
+</div>
 
 </div>
 
