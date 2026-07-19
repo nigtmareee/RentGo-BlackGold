@@ -25,7 +25,7 @@ if (!$data) {
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<title>Premium Fleet - RentGo</title>
+<title>Premium Fleet | RentGo Black Gold Luxury</title>
 
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
@@ -34,115 +34,295 @@ if (!$data) {
 <style>
 
 :root{
+
     --gold:#d4af37;
+    --gold-light:#f4d46b;
     --dark:#050505;
-    --card:#111111;
+    --card:#111;
+    --card2:#1a1a1a;
+    --text:#ffffff;
+    --muted:#bdbdbd;
+
 }
 
 *{
+
     margin:0;
     padding:0;
     box-sizing:border-box;
     font-family:'Segoe UI',sans-serif;
+
+}
+
+html{
+
+    scroll-behavior:smooth;
+
 }
 
 body{
+
     background:var(--dark);
-    color:white;
+    color:var(--text);
+    overflow-x:hidden;
+
 }
 
-/* HERO */
+/* ===========================
+        NAVBAR
+=========================== */
+
+.navbar{
+
+    background:rgba(5,5,5,.95);
+
+    backdrop-filter:blur(12px);
+
+    border-bottom:1px solid rgba(212,175,55,.18);
+
+    padding:15px 0;
+
+    position:sticky;
+
+    top:0;
+
+    z-index:999;
+
+}
+
+.logo{
+
+    color:var(--gold);
+
+    text-decoration:none;
+
+    font-size:34px;
+
+    font-weight:800;
+
+    letter-spacing:1px;
+
+}
+
+.logo:hover{
+
+    color:var(--gold-light);
+
+}
+
+/* ===========================
+          HERO
+=========================== */
 
 .hero{
 
-    min-height:55vh;
+    position:relative;
+
+    min-height:60vh;
 
     display:flex;
+
     align-items:center;
 
     background:
+
     linear-gradient(
-        rgba(0,0,0,.75),
-        rgba(0,0,0,.75)
+        rgba(0,0,0,.72),
+        rgba(0,0,0,.82)
     ),
+
     url('../../assets/img/hero.jpg');
 
     background-size:cover;
+
     background-position:center;
 
-    color:white;
+    overflow:hidden;
+
+}
+
+.hero::before{
+
+    content:"";
+
+    position:absolute;
+
+    width:500px;
+
+    height:500px;
+
+    background:rgba(212,175,55,.05);
+
+    filter:blur(120px);
+
+    border-radius:50%;
+
+    top:-150px;
+
+    right:-150px;
+
 }
 
 .hero h1{
 
-    font-size:65px;
+    font-size:64px;
 
     font-weight:900;
 
-    margin-bottom:15px;
+    margin-bottom:20px;
+
 }
 
-.hero h1 span{
+.hero span{
 
     color:var(--gold);
+
 }
 
 .hero p{
 
-    color:#d7d7d7;
+    max-width:720px;
 
-    font-size:20px;
+    color:#d6d6d6;
 
-    max-width:700px;
+    font-size:19px;
 
-    margin:auto;
+    line-height:1.8;
+
 }
 
-/* BUTTON */
+/* ===========================
+          BUTTON
+=========================== */
 
 .btn-gold{
+
+    background:linear-gradient(
+        135deg,
+        var(--gold),
+        #b98d12
+    );
+
+    color:#000;
+
+    border:none;
+
+    font-weight:700;
+
+    border-radius:14px;
+
+    padding:13px 28px;
+
+    transition:.35s;
+
+}
+
+.btn-gold:hover{
+
+    transform:translateY(-3px);
+
+    color:#000;
+
+    box-shadow:0 10px 30px rgba(212,175,55,.30);
+
+}
+
+.btn-outline-gold{
+
+    border:1px solid var(--gold);
+
+    color:var(--gold);
+
+    border-radius:14px;
+
+    padding:13px 28px;
+
+    transition:.35s;
+
+}
+
+.btn-outline-gold:hover{
 
     background:var(--gold);
 
     color:#000;
 
-    font-weight:700;
-
-    border:none;
-
-    border-radius:14px;
-
-    padding:14px 25px;
 }
 
-.btn-gold:hover{
-
-    background:#c79d1c;
-
-    color:#000;
-}
-
-/* SECTION */
+/* ===========================
+        SECTION TITLE
+=========================== */
 
 .section{
+
     padding:90px 0;
+
 }
 
-/* CARD */
+.section-title{
+
+    color:var(--gold);
+
+    font-size:34px;
+
+    font-weight:800;
+
+    margin-bottom:10px;
+
+}
+
+.section-subtitle{
+
+    color:#bdbdbd;
+
+    margin-bottom:45px;
+
+}
+
+/* ===========================
+        CARD MOBIL
+=========================== */
 
 .car-card{
 
-    background:var(--card);
+    background:linear-gradient(
+        145deg,
+        var(--card),
+        var(--card2)
+    );
 
     border:1px solid rgba(212,175,55,.15);
 
-    border-radius:22px;
+    border-radius:24px;
 
     overflow:hidden;
 
     transition:.35s;
 
     height:100%;
+
+    position:relative;
+
+}
+
+.car-card::before{
+
+    content:"";
+
+    position:absolute;
+
+    width:140px;
+
+    height:140px;
+
+    background:rgba(212,175,55,.04);
+
+    border-radius:50%;
+
+    top:-40px;
+
+    right:-40px;
+
 }
 
 .car-card:hover{
@@ -152,21 +332,32 @@ body{
     border-color:var(--gold);
 
     box-shadow:
-    0 0 30px rgba(212,175,55,.12);
+    0 20px 40px rgba(0,0,0,.45);
+
 }
 
 .car-card img{
 
     width:100%;
 
-    height:260px;
+    height:250px;
 
     object-fit:cover;
+
+    transition:.4s;
+
+}
+
+.car-card:hover img{
+
+    transform:scale(1.05);
+
 }
 
 .car-body{
 
-    padding:25px;
+    padding:28px;
+
 }
 
 .car-name{
@@ -175,73 +366,178 @@ body{
 
     font-weight:800;
 
-    color:white;
+    color:#fff;
+
+    margin-bottom:15px;
+
 }
 
 .car-info{
 
-    color:#d7d7d7;
+    color:#d4d4d4;
+
+    margin-bottom:12px;
+
+    display:flex;
+
+    align-items:center;
+
+    gap:10px;
+
+}
+
+.car-info i{
+
+    color:var(--gold);
+
+    width:22px;
+
 }
 
 .car-price{
 
     color:var(--gold);
 
-    font-size:30px;
+    font-size:34px;
 
     font-weight:900;
+
+    margin-top:18px;
+
 }
 
-/* STATUS */
+.car-price span{
+
+    font-size:15px;
+
+    color:#aaa;
+
+    font-weight:400;
+
+}
+
+/* ===========================
+         STATUS
+=========================== */
+
+.badge{
+
+    padding:9px 16px;
+
+    border-radius:50px;
+
+    font-size:13px;
+
+    font-weight:600;
+
+}
 
 .status-tersedia{
 
     background:#198754;
 
-    padding:8px 12px;
 }
 
 .status-disewa{
 
     background:#dc3545;
 
-    padding:8px 12px;
 }
 
-/* DETAIL BUTTON */
+/* ===========================
+      DETAIL BUTTON
+=========================== */
 
 .btn-detail{
 
-    background:var(--gold);
+    background:linear-gradient(
+        135deg,
+        var(--gold),
+        #b98d12
+    );
 
     color:#000;
 
     border:none;
 
-    font-weight:700;
-
     border-radius:12px;
 
-    padding:12px;
+    font-weight:700;
+
+    padding:13px;
+
+    transition:.35s;
+
 }
 
 .btn-detail:hover{
 
-    background:#c79d1c;
-
     color:#000;
+
+    transform:translateY(-2px);
+
 }
 
-/* RESPONSIVE */
+/* ===========================
+        FOOTER
+=========================== */
+
+.footer{
+
+    border-top:1px solid rgba(212,175,55,.18);
+
+    margin-top:80px;
+
+    padding:35px;
+
+    text-align:center;
+
+    color:#999;
+
+}
+
+.footer h5{
+
+    color:var(--gold);
+
+    margin-bottom:10px;
+
+}
+
+/* ===========================
+        RESPONSIVE
+=========================== */
 
 @media(max-width:768px){
 
+.hero{
+
+    min-height:50vh;
+
+}
+
 .hero h1{
+
     font-size:42px;
+
 }
 
 .hero p{
+
     font-size:16px;
+
+}
+
+.section{
+
+    padding:60px 0;
+
+}
+
+.section-title{
+
+    font-size:28px;
+
 }
 
 }
@@ -252,90 +548,171 @@ body{
 
 <body>
 
-<!-- HERO -->
+<!-- ===========================
+        NAVBAR
+=========================== -->
 
-<section class="hero">
+<nav class="navbar navbar-expand-lg">
 
-<div class="container text-center">
+<div class="container">
 
-<h1>
+<a href="../dashboard.php" class="logo">
 
-Our <span>Premium Fleet</span>
+<i class="fas fa-car-side me-2"></i>
 
-</h1>
+RentGo
 
-<p>
+</a>
 
-Luxury vehicles for every journey.
-Temukan armada terbaik dengan kenyamanan premium,
-aman, dan terpercaya bersama RentGo.
+<div class="ms-auto d-flex align-items-center">
 
-</p>
+<span class="text-light me-3">
 
-<a
-href="../dashboard.php"
-class="btn btn-gold mt-4"
->
+<i class="fas fa-user-circle text-warning me-2"></i>
 
-<i class="fas fa-arrow-left"></i>
+<?= htmlspecialchars($_SESSION['nama']); ?>
+
+</span>
+
+<a href="../dashboard.php"
+class="btn btn-outline-gold me-2">
+
+<i class="fas fa-house me-2"></i>
 
 Dashboard
 
 </a>
 
+<a href="../../auth/logout.php"
+class="btn btn-gold">
+
+<i class="fas fa-right-from-bracket me-2"></i>
+
+Logout
+
+</a>
+
+</div>
+
+</div>
+
+</nav>
+
+<!-- ===========================
+            HERO
+=========================== -->
+
+<section class="hero">
+
+<div class="container">
+
+<div class="row align-items-center">
+
+<div class="col-lg-7">
+
+<h1>
+
+Premium <span>Fleet</span>
+
+</h1>
+
+<p>
+
+Temukan kendaraan terbaik untuk setiap perjalanan Anda.
+RentGo menghadirkan armada premium dengan kenyamanan,
+keamanan, dan pelayanan profesional.
+
+</p>
+
+<div class="mt-4">
+
+<a href="#fleet"
+class="btn btn-gold me-3">
+
+<i class="fas fa-car me-2"></i>
+
+Lihat Armada
+
+</a>
+
+<a href="../booking/riwayat.php"
+class="btn btn-outline-gold">
+
+<i class="fas fa-clock-rotate-left me-2"></i>
+
+Riwayat Booking
+
+</a>
+
+</div>
+
+</div>
+
+<div class="col-lg-5 text-center mt-5 mt-lg-0">
+
+<i class="fas fa-car-side"
+style="font-size:180px;color:#d4af37;opacity:.9;"></i>
+
+</div>
+
+</div>
+
 </div>
 
 </section>
 
-<!-- DAFTAR MOBIL -->
+<!-- ===========================
+      DAFTAR ARMADA
+=========================== -->
 
-<section class="section">
+<section class="section" id="fleet">
 
 <div class="container">
 
-<div class="row">
+<div class="text-center mb-5">
+
+<h2 class="section-title">
+
+Luxury Vehicle Collection
+
+</h2>
+
+<p class="section-subtitle">
+
+Pilih kendaraan yang sesuai dengan kebutuhan perjalanan Anda.
+
+</p>
+
+</div>
+
+<div class="row g-4">
 
 <?php while($mobil = mysqli_fetch_assoc($data)) : ?>
 
 <?php
 
-$namaMobil = strtolower(trim($mobil['nama_mobil']));
+if (
+    !empty($mobil['gambar']) &&
+    file_exists('../../assets/img/mobil/' . $mobil['gambar'])
+) {
 
-if (strpos($namaMobil,'alphard') !== false) {
+    $gambar = '../../assets/img/mobil/' . $mobil['gambar'];
 
-    $gambar =
-    '../../assets/img/alphard.jpg';
+} else {
 
-}
-elseif (strpos($namaMobil,'innova') !== false) {
-
-    $gambar =
-    '../../assets/img/innova.jpg';
-
-}
-elseif (strpos($namaMobil,'avanza') !== false) {
-
-    $gambar =
-    '../../assets/img/avanza.jpg';
-
-}
-else {
-
-    $gambar =
-    '../../assets/img/hero.jpg';
+    $gambar = '../../assets/img/hero.jpg';
 
 }
 
 ?>
 
-<div class="col-lg-4 col-md-6 mb-4">
+<div class="col-xl-4 col-lg-6">
 
 <div class="car-card">
 
 <img
 src="<?= $gambar ?>"
-alt="<?= htmlspecialchars($mobil['nama_mobil']) ?>"
->
+alt="<?= htmlspecialchars($mobil['nama_mobil']) ?>">
 
 <div class="car-body">
 
@@ -345,39 +722,51 @@ alt="<?= htmlspecialchars($mobil['nama_mobil']) ?>"
 
 </h3>
 
-<hr class="text-secondary">
+<div class="car-info">
 
-<p class="car-info">
+<i class="fas fa-industry"></i>
 
-<strong>Merk :</strong>
+<span>
 
 <?= htmlspecialchars($mobil['merk']) ?>
 
-</p>
+</span>
 
-<p class="car-info">
+</div>
 
-<strong>Tahun :</strong>
+<div class="car-info">
+
+<i class="fas fa-calendar"></i>
+
+<span>
 
 <?= htmlspecialchars($mobil['tahun']) ?>
 
-</p>
+</span>
 
-<p class="car-info">
+</div>
 
-<strong>Transmisi :</strong>
+<div class="car-info">
+
+<i class="fas fa-gears"></i>
+
+<span>
 
 <?= htmlspecialchars($mobil['transmisi']) ?>
 
-</p>
+</span>
 
-<p>
+</div>
+
+<div class="mt-3">
 
 <strong>Status :</strong>
 
-<?php if($mobil['status'] == 'Tersedia'): ?>
+<?php if($mobil['status']=='Tersedia'): ?>
 
 <span class="badge status-tersedia">
+
+<i class="fas fa-circle-check me-1"></i>
 
 Tersedia
 
@@ -387,15 +776,17 @@ Tersedia
 
 <span class="badge status-disewa">
 
+<i class="fas fa-circle-xmark me-1"></i>
+
 <?= htmlspecialchars($mobil['status']) ?>
 
 </span>
 
 <?php endif; ?>
 
-</p>
+</div>
 
-<div class="car-price mb-3">
+<div class="car-price">
 
 Rp <?= number_format(
     $mobil['harga_per_hari'],
@@ -404,20 +795,17 @@ Rp <?= number_format(
     '.'
 ); ?>
 
-<span style="font-size:16px;color:#bbb;">
-/ Hari
-</span>
+<span>/ Hari</span>
 
 </div>
 
-<div class="d-grid">
+<div class="d-grid mt-4">
 
 <a
 href="detail.php?id=<?= $mobil['id'] ?>"
-class="btn btn-detail"
->
+class="btn btn-detail">
 
-<i class="fas fa-car me-2"></i>
+<i class="fas fa-eye me-2"></i>
 
 Lihat Detail
 
@@ -439,6 +827,114 @@ Lihat Detail
 
 </section>
 
+<!-- ===========================
+        LUXURY EXPERIENCE
+=========================== -->
+
+<section class="container mb-5">
+
+<div class="promo-card">
+
+<div class="row align-items-center">
+
+<div class="col-lg-8">
+
+<h3>
+
+<i class="fas fa-crown me-2"></i>
+
+Drive With Confidence
+
+</h3>
+
+<p>
+
+Seluruh armada RentGo selalu mendapatkan perawatan berkala,
+kebersihan yang terjaga, serta perlindungan asuransi untuk
+memberikan pengalaman berkendara yang aman, nyaman, dan
+berkelas.
+
+</p>
+
+<div class="mt-4">
+
+<a href="../booking/riwayat.php"
+class="btn btn-outline-gold me-2">
+
+<i class="fas fa-clock-rotate-left me-2"></i>
+
+Riwayat Booking
+
+</a>
+
+<a href="../dashboard.php"
+class="btn btn-gold">
+
+<i class="fas fa-house me-2"></i>
+
+Dashboard
+
+</a>
+
+</div>
+
+</div>
+
+<div class="col-lg-4 text-center mt-4 mt-lg-0">
+
+<i class="fas fa-shield-halved"
+style="font-size:120px;color:#d4af37;"></i>
+
+</div>
+
+</div>
+
+</div>
+
+</section>
+
+<!-- ===========================
+            FOOTER
+=========================== -->
+
+<footer class="footer">
+
+<div class="container">
+
+<h5>
+
+<i class="fas fa-car-side me-2"></i>
+
+RentGo Black Gold Luxury
+
+</h5>
+
+<p class="mb-2">
+
+Premium Car Rental System
+
+</p>
+
+<p class="text-secondary mb-0">
+
+Luxury • Comfort • Professional Service
+
+</p>
+
+<hr class="border-secondary my-4">
+
+<small>
+
+© <?= date('Y'); ?> RentGo Black Gold Luxury.
+All Rights Reserved.
+
+</small>
+
+</div>
+
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
 </body>
 </html>
-```
